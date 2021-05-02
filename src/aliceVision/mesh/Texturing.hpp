@@ -192,6 +192,9 @@ public:
 
     /// Save textured mesh as an OBJ + MTL file
     void saveAsOBJ(const bfs::path& dir, const std::string& basename, imageIO::EImageFileType textureFileType = imageIO::EImageFileType::PNG);
+
+    // Remove unreferenced points
+    void removeUntexturedPointsFromMesh(StaticVector<int>& out_ptIdToNewPtId);
 };
 
 } // namespace mesh

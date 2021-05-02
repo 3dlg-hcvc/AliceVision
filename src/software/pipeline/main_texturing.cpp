@@ -241,6 +241,16 @@ int aliceVision_main(int argc, char* argv[])
     ALICEVISION_LOG_INFO("Generate textures.");
     mesh.generateTextures(mp, outputFolder, outputTextureFileType);
 
+    // remove untextured points in the mesh
+    mesh::Texturing output_mesh;
+    bfs::path outDir = outputFolder;
+    std::string objFilename = (outDir / ("texturedMesh.obj")).string();
+    output_mesh.loadOBJWithAtlas(objFilename);
+    StaticVector<int> ptIdToNewPtId;
+    output_mesh.removeUntexturedPointsFromMesh(ptIdToNewPtId);
+    ptIdToNewPtId.clear();
+    output_mesh.saveAsOBJ(outputFolder, "texturedMesh", outputTextureFileType);
+
     ALICEVISION_LOG_INFO("Task done in (s): " + std::to_string(timer.elapsed()));
     return EXIT_SUCCESS;
 }

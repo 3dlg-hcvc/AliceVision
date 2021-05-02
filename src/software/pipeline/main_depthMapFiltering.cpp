@@ -137,7 +137,7 @@ int aliceVision_main(int argc, char* argv[])
     }
 
     // initialization
-    mvsUtils::MultiViewParams mp(sfmData, "", depthMapsFolder, outputFolder, "", true);
+    mvsUtils::MultiViewParams mp(sfmData, "", depthMapsFolder, outputFolder, true);
 
     mp.setMinViewAngle(minViewAngle);
     mp.setMaxViewAngle(maxViewAngle);

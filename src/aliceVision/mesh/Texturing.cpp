@@ -1020,5 +1020,30 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
                          << "\t- mtl file: " << mtlFilename);
 }
 
+void Texturing::removeUntexturedPointsFromMesh(StaticVector<int>& out_ptIdToNewPtId) {
+    ALICEVISION_LOG_INFO("remove untextured points from mesh.");
+
+    // declare all triangles as used
+    StaticVector<int> visTris;
+    visTris.reserve(mesh->tris.size());
+    for(std::size_t atlasId=0; atlasId < _atlases.size(); ++atlasId)
+    {
+        for(const auto triangleID : _atlases[atlasId])
+        {
+            visTris.push_back(triangleID);
+        }
+    }
+
+    // generate a new mesh from all triangles so all unused points will be removed
+    Mesh cleanedMesh;
+    mesh->generateMeshFromTrianglesSubset(visTris, cleanedMesh, out_ptIdToNewPtId);
+
+    ALICEVISION_LOG_DEBUG("There are " << mesh->tris.size() << " triangles in the input mesh.");
+    ALICEVISION_LOG_DEBUG("There are " << cleanedMesh.tris.size() << " triangles in the cleaned mesh.");
+
+    std::swap(cleanedMesh.pts, mesh->pts);
+    std::swap(cleanedMesh.tris, mesh->tris);
+}
+
 } // namespace mesh
 } // namespace aliceVision

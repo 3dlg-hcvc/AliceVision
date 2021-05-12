@@ -979,6 +979,8 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
             int vertexID1 = mesh->tris[triangleID].v[0];
             int vertexID2 = mesh->tris[triangleID].v[1];
             int vertexID3 = mesh->tris[triangleID].v[2];
+            if (vertexID1 == vertexID2 || vertexID1 == vertexID3 || vertexID2 == vertexID3)
+                continue;
 
             int uvID1 = mesh->trisUvIds[triangleID].m[0];
             int uvID2 = mesh->trisUvIds[triangleID].m[1];

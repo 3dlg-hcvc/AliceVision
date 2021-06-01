@@ -949,18 +949,25 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
     std::string mtlFilename = (dir / mtlName).string();
 
     // create .OBJ file
-    FILE* fobj = fopen(objFilename.c_str(), "w");
+    FILE* fobj = fopen(objFilename.c_str(), "w+");
+
+    // write vertices
+    auto vertices = mesh->pts;
+
+    // count total number of faces
+    size_t face_count = 0;
+    for(std::size_t atlasId=0; atlasId < _atlases.size(); ++atlasId)
+        for(const auto triangleID : _atlases[atlasId])
+            ++face_count;
 
     // header
     fprintf(fobj, "# \n");
     fprintf(fobj, "# Wavefront OBJ file\n");
-    fprintf(fobj, "# Created with AliceVision\n");
+    fprintf(fobj, "# num_v %d, num_f %d\n", vertices.size(), face_count);
     fprintf(fobj, "# \n");
     fprintf(fobj, "mtllib %s\n\n", mtlName.c_str());
     fprintf(fobj, "g TexturedMesh\n");
 
-    // write vertices
-    auto vertices = mesh->pts;
     for(int i = 0; i < vertices.size(); ++i)
         fprintf(fobj, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
 
@@ -979,8 +986,6 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
             int vertexID1 = mesh->tris[triangleID].v[0];
             int vertexID2 = mesh->tris[triangleID].v[1];
             int vertexID3 = mesh->tris[triangleID].v[2];
-            if (vertexID1 == vertexID2 || vertexID1 == vertexID3 || vertexID2 == vertexID3)
-                continue;
 
             int uvID1 = mesh->trisUvIds[triangleID].m[0];
             int uvID2 = mesh->trisUvIds[triangleID].m[1];
@@ -992,12 +997,12 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
     fclose(fobj);
 
     // create .MTL material file
-    FILE* fmtl = fopen(mtlFilename.c_str(), "w");
+    FILE* fmtl = fopen(mtlFilename.c_str(), "w+");
 
     // header
     fprintf(fmtl, "# \n");
     fprintf(fmtl, "# Wavefront material file\n");
-    fprintf(fmtl, "# Created with AliceVision\n");
+    fprintf(fmtl, "# num_atlases %d\n", _atlases.size());
     fprintf(fmtl, "# \n\n");
 
     // for each atlas, create a new material with associated texture
@@ -1007,11 +1012,11 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
         const std::string textureName = "texture_" + std::to_string(textureId) + "." + imageIO::EImageFileType_enumToString(textureFileType);
 
         fprintf(fmtl, "newmtl TextureAtlas_%i\n", textureId);
-        fprintf(fmtl, "Ka  0.6 0.6 0.6\n");
-        fprintf(fmtl, "Kd  0.6 0.6 0.6\n");
+        fprintf(fmtl, "Ka  1.0 1.0 1.0\n");
+        fprintf(fmtl, "Kd  1.0 1.0 1.0\n");
         fprintf(fmtl, "Ks  0.0 0.0 0.0\n");
         fprintf(fmtl, "d  1.0\n");
-        fprintf(fmtl, "Ns  0.0\n");
+        fprintf(fmtl, "Ns  10.0\n");
         fprintf(fmtl, "illum 2\n");
         fprintf(fmtl, "map_Kd %s\n", textureName.c_str());
     }
@@ -1020,6 +1025,26 @@ void Texturing::saveAsOBJ(const bfs::path& dir, const std::string& basename, ima
     ALICEVISION_LOG_INFO("Writing done: " << std::endl
                          << "\t- obj file: " << objFilename << std::endl
                          << "\t- mtl file: " << mtlFilename);
+}
+
+void Texturing::removeFreePointsFromMesh(StaticVector<int>& out_ptIdToNewPtId)
+{
+    ALICEVISION_LOG_INFO("remove free points from mesh.");
+
+    // declare all triangles as used
+    StaticVector<int> visTris;
+    visTris.reserve(mesh->tris.size());
+    for(int i = 0; i < mesh->tris.size(); ++i)
+    {
+        visTris.push_back(i);
+    }
+    // generate a new mesh from all triangles so all unused points will be removed
+    Mesh cleanedMesh;
+    mesh->generateMeshFromTrianglesSubset(visTris, cleanedMesh, out_ptIdToNewPtId);
+
+    std::swap(cleanedMesh.pts, mesh->pts);
+    std::swap(cleanedMesh.tris, mesh->tris);
+    // std::swap(cleanedMesh._colors, _colors);
 }
 
 void Texturing::removeUntexturedPointsFromMesh(StaticVector<int>& out_ptIdToNewPtId) {

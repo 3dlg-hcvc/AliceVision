@@ -1010,11 +1010,9 @@ void Mesh::generateMeshFromTrianglesSubset(const StaticVector<int>& visTris, Mes
     for(int i = 0; i < visTris.size(); i++)
     {
         int idTri = visTris[i];
-        if (tris[idTri].v[0] != tris[idTri].v[1] && tris[idTri].v[0] != tris[idTri].v[2] && tris[idTri].v[1] != tris[idTri].v[2]) {
-            out_ptIdToNewPtId[tris[idTri].v[0]] = 0; // 0 means used
-            out_ptIdToNewPtId[tris[idTri].v[1]] = 0;
-            out_ptIdToNewPtId[tris[idTri].v[2]] = 0;
-        }
+        out_ptIdToNewPtId[tris[idTri].v[0]] = 0; // 0 means used
+        out_ptIdToNewPtId[tris[idTri].v[1]] = 0;
+        out_ptIdToNewPtId[tris[idTri].v[2]] = 0;
     }
 
     int j = 0;

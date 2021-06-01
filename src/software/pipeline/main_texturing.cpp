@@ -247,7 +247,7 @@ int aliceVision_main(int argc, char* argv[])
     std::string objFilename = (outDir / ("texturedMesh.obj")).string();
     output_mesh.loadOBJWithAtlas(objFilename);
     StaticVector<int> ptIdToNewPtId;
-    output_mesh.removeUntexturedPointsFromMesh(ptIdToNewPtId);
+    output_mesh.removeFreePointsFromMesh(ptIdToNewPtId);
     ptIdToNewPtId.clear();
     output_mesh.saveAsOBJ(outputFolder, "texturedMesh", outputTextureFileType);
 

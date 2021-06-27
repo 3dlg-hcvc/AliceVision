@@ -128,8 +128,8 @@ elseif(UNIX)
 endif()
 set(GEOGRAM_TARGET geogram)
 ExternalProject_Add(${GEOGRAM_TARGET}
-       URL https://github.com/alicevision/geogram/archive/v1.7.6.tar.gz
-       URL_HASH MD5=d0f138f1cd50c633c30eacdb03619211
+       URL https://github.com/alicevision/geogram/archive/v1.6.10.tar.gz
+       URL_HASH MD5=2e47e801f5cb26f67aadf53fc58d4578
        DOWNLOAD_DIR ${BUILD_DIR}/download/geogram
        PREFIX ${BUILD_DIR}
        BUILD_IN_SOURCE 0
@@ -175,21 +175,20 @@ endif()
 set(TBB_TARGET tbb)
 ExternalProject_Add(${TBB_TARGET}
        # TODO: Update to 2021.1.1
-       URL https://github.com/01org/tbb/archive/2019_U6.tar.gz
-       URL_HASH MD5=fbb2d9572fe39b997575055b9f9c820b
+       URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.2.0.tar.gz
+       URL_HASH MD5=19d59b6d50b71e889eb41a902364dd62
        DOWNLOAD_DIR ${BUILD_DIR}/download/tbb
        PREFIX ${BUILD_DIR}
        BUILD_IN_SOURCE 0
        BUILD_ALWAYS 0
        UPDATE_COMMAND ""
        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/tbb
-       BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/tbb
+       BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/tbb_build
        INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-       CONFIGURE_COMMAND ""
-       BUILD_COMMAND $(MAKE) PREFIX=<INSTALL_DIR>
-       INSTALL_COMMAND mkdir -p <INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR} && echo "cp <BINARY_DIR>/build/linux_*_release/*.so* <INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}" > tbb_so_files.sh && sh tbb_so_files.sh && cp -r "<BINARY_DIR>/include" "<INSTALL_DIR>"
+       CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_CORE_BUILD_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> <SOURCE_DIR>
+       BUILD_COMMAND $(MAKE)
        )
-set(TBB_CMAKE_FLAGS -DTBB_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/include -DTBB_LIBRARIES=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libtbb.so)
+set(TBB_CMAKE_FLAGS -DTBB_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/include -DTBB_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/TBB -DTBB_LIBRARIES=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libtbb.so)
 
 # Add Eigen
 set(EIGEN_TARGET eigen)
@@ -696,7 +695,7 @@ ExternalProject_Add(${CCTAG_TARGET}
       BUILD_COMMAND $(MAKE)
       DEPENDS ${BOOST_TARGET} ${CUDA_TARGET} ${OPENCV_TARGET} ${EIGEN_TARGET} ${TBB_TARGET}
       )
-set(CCTAG_CMAKE_FLAGS -DCCTag_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/CCTag)
+set(CCTAG_CMAKE_FLAGS -DCCTag_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/CCTag -DBoost_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/Boost-1.70.0)
 endif()
 
 # Add PopSift
